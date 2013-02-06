@@ -95,11 +95,31 @@ $(document).ready(function() {
   $('#checkall').click(checkAll);
   $('#uncheckall').click(uncheckAll);
 
-  var content = [
-  {% for info in pos %}
-  "<div class=\"{{ info.slug }}\">{{ info.token }}</div>",
-  {% endfor %}
-  ];
-  $('#text').html(content.join('\n'));
+  var next_page = 1;
+
+  function load_next_page() {
+    if (next_page) {
+      var next_page_url = '{% url document_visualization document.slug "part-of-speech" "json" %}?page=' + next_page;
+      $.ajax({url: next_page_url, success: function(data, responseText) {
+        $('#text').append(data);
+        data.pos.forEach(function(info){
+          var tag = '<div class=\"' + info.slug + '\">' + info.token + '</div>\n';
+          $("#text").append(tag);
+          next_page = data.next_page;
+        });
+        }, complete: function() {
+         $('#loading').remove();
+      }});
+    }
+  }
+  $('#text').scroll(function(e) {
+    var threshold = 500;
+    var scroll_left = $('#text').prop('scrollHeight') - $('#text').scrollTop();
+    if ((scroll_left < threshold) && !$.find('#loading').length){
+      $('#text').append('<div id="loading"><img src="{{ STATIC_URL }}/img/spinner.gif" /></div>');
+      load_next_page();
+    }
+  });
+  load_next_page();
 });
 </script>

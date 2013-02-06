@@ -18,9 +18,11 @@
 # along with PyPLN.  If not, see <http://www.gnu.org/licenses/>.
 from collections import Counter
 from string import punctuation
+import json
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -95,9 +97,14 @@ class VisualizationView(TemplateView):
                 context, **response_kwargs)
 
         fmt = self.kwargs['fmt']
-        if fmt != "html":
-            response["Content-Type"] = "text/{}; charset=utf-8".format('plain'
-                    if fmt == 'txt' else fmt)
+        content_types = {
+            "html": settings.DEFAULT_CONTENT_TYPE,
+            "json": "application/json",
+            "txt": "text/plain",
+            "csv": "text/csv",
+        }
+        response["Content-Type"] = "{}; charset=utf-8".format(content_types[fmt])
+        if fmt not in ("html", "json"):
             response["Content-Disposition"] = ('attachment; '
                     'filename="{}-{}.{}"').format(self.document.slug,
                             self.slug, fmt)
@@ -118,6 +125,19 @@ class PartOfSpeechVisualization(VisualizationView):
                     "in tagset.\n\n").format(item[1], item[0])
         mail_admins(subject, message)
 
+    def format_json(self, pos_data):
+        pos_paginator = Paginator(pos_data, 1000)
+        page = self.request.GET.get("page")
+        try:
+            pos = pos_paginator.page(page)
+        except (PageNotAnInteger, TypeError):
+            pos = pos_paginator.page(1)
+        except EmptyPage:
+            pos = pos_paginator.page(pos_paginator.num_pages)
+
+        next_page = pos.next_page_number() if pos.has_next() else False
+        return {"pos": json.dumps({"pos": pos.object_list, "next_page": next_page})}
+
     def process(self):
         data = self.get_data_from_store()
         pos = []
@@ -135,6 +155,9 @@ class PartOfSpeechVisualization(VisualizationView):
 
         if tag_errors:
             self.warn_about_unknown_tags(tag_errors)
+
+        if self.kwargs["fmt"] == "json":
+            return self.format_json(pos)
 
         return {'pos': pos, 'tagset': TAGSET, 'most_common': COMMON_TAGS[:20],
                 'token_list': token_list}
