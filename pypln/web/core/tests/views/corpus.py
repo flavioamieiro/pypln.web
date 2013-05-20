@@ -18,11 +18,15 @@
 # along with PyPLN.  If not, see <http://www.gnu.org/licenses/>.
 import json
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
+from rest_framework.renderers import JSONRenderer
+
 from pypln.web.core.models import Corpus
+from pypln.web.core.renderers import ContextTemplateHTMLRenderer
 
 __all__ = ["CorpusListViewTest", "CorpusDetailViewTest"]
 
@@ -33,6 +37,24 @@ class CorpusListViewTest(TestCase):
     def test_requires_login(self):
         response = self.client.get(reverse('corpus-list'))
         self.assertEqual(response.status_code, 403)
+
+    def test_list_corpora_using_html_template(self):
+        self.client.login(username="user", password="user")
+        response = self.client.get(reverse('corpus-list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed("corpus_list.html")
+        self.assertIsInstance(response.accepted_renderer,
+            ContextTemplateHTMLRenderer)
+        self.assertNotIn(settings.TEMPLATE_STRING_IF_INVALID,
+            response.rendered_content)
+
+    def test_list_corpora_using_json(self):
+        self.client.login(username="user", password="user")
+        response = self.client.get(reverse('corpus-list'),
+            HTTP_ACCEPT="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.accepted_renderer, JSONRenderer)
+        json.loads(response.rendered_content)
 
     def test_only_lists_corpora_that_belongs_to_the_authenticated_user(self):
         self.client.login(username="user", password="user")

@@ -22,12 +22,14 @@ from django.http import Http404
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.decorators import api_view
+from rest_framework.renderers import JSONRenderer
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework import serializers
 
 from pypln.web.backend_adapter.pipelines import create_pipeline
 from pypln.web.core.models import Corpus, Document
+from pypln.web.core.renderers import ContextTemplateHTMLRenderer
 from pypln.web.core.serializers import CorpusSerializer, DocumentSerializer
 from pypln.web.core.serializers import PropertyListSerializer
 
@@ -42,9 +44,13 @@ class CorpusList(generics.ListCreateAPIView):
     model = Corpus
     serializer_class = CorpusSerializer
     permission_classes = (permissions.IsAuthenticated, )
+    renderer_classes = (ContextTemplateHTMLRenderer, JSONRenderer)
 
     def get_queryset(self):
         return Corpus.objects.filter(owner=self.request.user)
+
+    def get_template_names(self):
+        return ("corpus_list.html", )
 
     def pre_save(self, obj):
         obj.owner = self.request.user

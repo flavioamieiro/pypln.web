@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <title>PyPLN - Corpora</title>
+  </head>
+  <body>
+    <h1>Corpora</h1>
+    <table>
+      <tr><th>Corpus</th><th>Date created</th><th># of documents</th></tr>
+      {% for corpus in data %}
+      <tr><td><a href="{{ corpus.url }}">{{ corpus.name }}</a></td><td>{{ corpus.created_at }}</td><td>{{ corpus.documents|length }}</td></tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
