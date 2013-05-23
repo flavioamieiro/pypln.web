@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <title>PyPLN - Corpora</title>
+  </head>
+  <body>
+    <h1>{{ data.name }}</h1>
+    <p>{{ data.description }}</p>
+    <ul>
+      {% for document in data.documents %}
+      <li><a href="{{ document }}">{{ document }}</a></li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

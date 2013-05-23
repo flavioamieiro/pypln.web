@@ -59,9 +59,13 @@ class CorpusDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Corpus
     serializer_class = CorpusSerializer
     permission_classes = (permissions.IsAuthenticated, )
+    renderer_classes = (ContextTemplateHTMLRenderer, JSONRenderer)
 
     def get_queryset(self):
         return Corpus.objects.filter(owner=self.request.user)
+
+    def get_template_names(self):
+        return ("corpus_detail.html", )
 
     def pre_save(self, obj):
         obj.owner = self.request.user

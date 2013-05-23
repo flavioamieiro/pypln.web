@@ -102,6 +102,27 @@ class CorpusDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.renderer_context['view'].object, corpus)
 
+    def test_shows_corpus_using_html_template(self):
+        self.client.login(username="user", password="user")
+        corpus = Corpus.objects.filter(owner__username="user")[0]
+        response = self.client.get(reverse('corpus-detail',
+            kwargs={'pk': corpus.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed("corpus_detail.html")
+        self.assertIsInstance(response.accepted_renderer,
+            ContextTemplateHTMLRenderer)
+        self.assertNotIn(settings.TEMPLATE_STRING_IF_INVALID,
+            response.rendered_content)
+
+    def test_shows_corpus_using_json(self):
+        self.client.login(username="user", password="user")
+        corpus = Corpus.objects.filter(owner__username="user")[0]
+        response = self.client.get(reverse('corpus-detail',
+            kwargs={'pk': corpus.id}), HTTP_ACCEPT="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.accepted_renderer, JSONRenderer)
+        json.loads(response.rendered_content)
+
     def test_returns_404_for_inexistent_corpus(self):
         self.client.login(username="user", password="user")
         response = self.client.get(reverse('corpus-detail',
