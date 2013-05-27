@@ -24,4 +24,14 @@ class ContextTemplateHTMLRenderer(TemplateHTMLRenderer):
     def resolve_context(self, data, request, response):
         if response.exception:
             data['status_code'] = response.status_code
+
         return RequestContext(request, {'data': data})
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if renderer_context is not None:
+            view = renderer_context['view']
+            if hasattr(view, 'object'):
+                data['object'] = renderer_context['view'].object
+
+        return super(ContextTemplateHTMLRenderer, self).render(data,
+                accepted_media_type, renderer_context)
