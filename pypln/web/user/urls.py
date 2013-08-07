@@ -17,13 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with PyPLN.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, url
 
-from django.contrib import admin
-admin.autodiscover()
-
-urlpatterns = patterns('',
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^user/', include('pypln.web.user.urls')),
-    url(r'^', include('pypln.web.core.urls')),
+urlpatterns = patterns('pypln.web.user.views',
+    url(r'^change-password/$', 'change_password', name='change-password'),
 )

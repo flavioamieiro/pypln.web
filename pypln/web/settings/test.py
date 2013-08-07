@@ -28,6 +28,8 @@ MONGODB_CONFIG = {
     'monitoring_collection': 'monitoring',
 }
 
+TEMPLATE_STRING_IF_INVALID = "INVALID_CONTEXT_VARIABLE"
+
 # During tests, we should not depend on the router being available. The
 # behaviour of pypelinin should be mocked.
 ROUTER_API = 'dummy'

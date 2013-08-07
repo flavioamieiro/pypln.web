@@ -147,6 +147,7 @@ INSTALLED_APPS = (
 
     'pypln.web.core',
     'pypln.web.backend_adapter',
+    'pypln.web.user',
 )
 
 # A sample logging configuration. The only tangible logging

@@ -17,13 +17,20 @@
 # You should have received a copy of the GNU General Public License
 # along with PyPLN.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls import patterns, include, url
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 
-from django.contrib import admin
-admin.autodiscover()
-
-urlpatterns = patterns('',
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^user/', include('pypln.web.user.urls')),
-    url(r'^', include('pypln.web.core.urls')),
-)
+@login_required
+def change_password(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Password changed successfully.")
+    else:
+        form = PasswordChangeForm(request.user)
+    context = RequestContext(request, {"form": form})
+    return render_to_response("user/change_password.html", context)
