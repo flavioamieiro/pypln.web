@@ -32,5 +32,5 @@ def change_password(request):
             messages.success(request, "Password changed successfully.")
     else:
         form = PasswordChangeForm(request.user)
-    context = RequestContext(request, {"form": form})
+    context = RequestContext(request, {"form": form, "request": request})
     return render_to_response("user/change_password.html", context)
